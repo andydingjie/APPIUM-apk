@@ -1,0 +1,148 @@
+
+http://qxf2.com/blog/appium-tutorial-python-physical-device/
+
+Appium tutorial: Execute Python tests on mobile devices
+This Appium tutorial will show you how to run automated tests on a real physical device. We estimate skimming through this post will take you 10 minutes. We estimate working through this post, step by step, will take you about 90 minutes. In this post we will cover getting setup with Appium, interfacing with real devices, writing and running Appium tests. We also briefly introduce you to multiple ways to locate UI elements .
+
+NOTE: If you have an Android phone handy, you can follow along easily. If not, you may be interested in a previous post showing you how to get started with Appium on an emulator.
+
+Why this post?
+There are two compelling reasons for this post.
+1. Mobile devices are taking over the world
+In recent times there is a lot of interest on mobile testing. And rightly so. The mobile space is growing. The apps are the new cool thing. The mobile space is ideal for software testers looking to learn new things and keep current.
+2. Lack of high quality tutorials on mobile automation
+One big challenge in the mobile automation space is the the limited amount of information about the technologies. Quality sources of information on mobile automation is very limited.
+
+So here is a high quality and informative tutorial for the hands on tester who wants to get started with Appium and mobile automation on a physical mobile device.
+
+Why Appium?
+There are quite a few number of tools out there in the mobile automation market like MonkeyTalk, Calabash, Robotium, etc. Each has its own advantages and limitations. Some of these tools require an agent to be installed, the application has to be recompiled so that the tool can interact with the mobile app, etc. However Appium is built on the idea that testing native apps shouldn’t require including an SDK or recompiling the app. Appium is also a open source project – so if you are not happy with it, you can contribute and enhance it. Appium tests run against both on iOS and Android. For me, Appium (while still being extremely immature), looks to be the stand out technology that will own the mobile UI automation space. Appium reminds me of the early Selenium versions I used. Based on history, I think Appium will be the front runner in the mobile UI automation space.
+
+Step by step Appium tutorial
+We have already shown you how to run an Appium test using an emulator in one of our previous posts. In this post I will show you how to test an app using a real device. Being a tennis fan, I decided to test a tennis app. On my Android phone I downloaded the ATP/WTA app and decided to automate some of the functionality of this app. I will also show you how to navigate through different pages in the app using different locator strategies, get data from a table using Appium and Python and how to use the uiautomator to find UI components of the page.
+
+Overview
+1. Appium setup
+2. Connect to an Android device
+3. Select an app to test, get its package and activity name
+4. Use uiautomatorviewer to find UI components of the application
+5. Write the test
+6. Start and launch Appium server console
+7. Run the test
+8. View the test result
+
+STEP 1: Appium setup
+Download and install Android SDK and Appium along with Appium’s client libraries for Python. Installations are fairly straight forward. However if you need help, please refer to the setup section in our previous blog for a more detailed process on how to set up Appium on your machine.
+
+STEP 2: Connect to an Android device
+You have to enable USB debugging in your phone to be able to run your test scripts. For this, first you need to enable “Developer options” by navigating to Settings/About Phone and tapping build number seven times. You will get a notification saying that you’re now a developer. Ignore it – you are still a tester ;). Once you are a developer you need to navigate to “Developer options” and enable the USB debugging option. You can refer to this link for more details
+
+Build Number in Android Settings
+
+Enable USB Debugging
+
+Developer Option in Android settings
+
+Note: On some devices you may have to download some device drivers to connect your phone to the PC
+
+STEP 3: Select an app to test, get its package and activity name
+You can go to Google Play Store and download the ATP/WTA app. We will automate some of the functionality like navigating to the ATP Singles Rankings view to assert that Novak Djokovic is the first player listed and also get his personal details from the table in players view.
+
+In order to start the app we would need the app Package and Activity name. We can get these details from the apk file of the app. Instead of downloading the apk file and looking into app manifest file for this detail, we can also download some really cool apps which can get you these details. Application Reader is one such app which you can download from Play Store and get the app Package and Activity details. Just download the app and click on Application Reader Icon which will list all the apps on your device. Click on your app to get the details required as shown below
+
+Application Reader for getting the Package and Activity name
+
+Details of ATP WTA app
+
+STEP 4: Use uiautomatorviewer to find UI components of the application uiautomatorviewer is a GUI tool to scan and analyze the UI components of an Android application. To click or to navigate to any components in your app you need to identify the UI components of your application. Using uiautomatorviewer you can take the snapshot of the UI screen on any Android device that is connected to your machine. You can then inspect the layout hierarchy and view the properties of the individual UI components that are displayed on the device.
+
+Connect your Android device to your machine and open the app you are testing. In your machine open a terminal window and navigate to the path $android-sdk /tools and run the command to open Uiautomatorviewer
+
+$ uiautomatorviewer
+To capture a screen, click the “Device Screenshot button” in the uiautomatorviewer tool. The screenshot of the page in your device is captured. You can move over the snapshot in the left-hand panel to see the UI components identified by the uiautomatorviewer. You can view the component’s properties listed in the lower right-hand panel, and the layout hierarchy in the upper right-hand panel.
+UI  Automator Viewer
+
+STEP 5: Write the test
+We will launch the ATP WTA app using the package and activity name we found out and then navigate through various pages using different locator strategies. While we do not recommend using multiple locator strategies, we are doing so in this tutorial only to make you aware of your options. Then we will confirm that Novak Djokovic is the top player listed in ATP Singles Rankings list view and get his personal details from a table in Players view.
+
+"""
+Qxf2: Example script to run one test against ATP_WTA app using Appium
+The test will navigate to ATP Singles Rankings list and confirm that Novak
+Djokovic is the top player listed and get his personal details from a table.
+ 
+"""
+ 
+import unittest, time, os
+from appium import webdriver
+from time import sleep
+ 
+class Android_ATP_WTA(unittest.TestCase):
+    "Class to run tests against the ATP WTA app"
+    def setUp(self):
+        "Setup for the test"
+        desired_caps = {}
+        desired_caps['platformName'] = 'Android'
+        desired_caps['platformVersion'] = '4.4'
+        desired_caps['deviceName'] = '$ Your device name'
+        # Since the app is already installed launching it using package and activity name
+        desired_caps['appPackage'] = 'atpwta.live'
+        desired_caps['appActivity'] = '.activity.Main'
+        # Adding appWait Activity since the activity name changes as the focus shifts to the ATP WTA app's first page
+        desired_caps['appWaitActivity'] = '.activity.root.TournamentList'
+        self.driver = webdriver.Remote('http://localhost:4723/wd/hub', desired_caps)
+ 
+    def tearDown(self):
+        "Tear down the test"
+        self.driver.quit()
+ 
+    def test_atp_wta(self):
+        "Testing the ATP WTA app "
+        self.driver.implicitly_wait(30)
+        time.sleep(5)
+ 
+        # click on Navigation Bar MainMenu by finding element by xpath
+        menubar = self.driver.find_element_by_xpath("//android.widget.Spinner[@resource-id='atpwta.live:id/NavBarMainMenuSpinner']")
+        menubar.click()
+ 
+        # From list of options available click on Rankings by finding element using uiautomator
+        rankings = self.driver.find_element_by_android_uiautomator('new UiSelector().text("Rankings")')
+        rankings.click()
+ 
+        # click on ATP Singles by finding element using id
+        singles = self.driver.find_element_by_id('atpwta.live:id/RankingsListItem')
+        singles.click()
+ 
+        # Assert that Novak Djokovic is the top listed player
+        elmnt = self.driver.find_element_by_id('atpwta.live:id/Player1TV')
+        self.assertEqual('Novak Djokovic', elmnt.get_attribute('text'))
+        print elmnt.get_attribute('text')
+ 
+        elmnt = self.driver.find_element_by_xpath("//android.widget.LinearLayout[@index=0]")
+        elmnt.click()
+ 
+        # Print the contents of Table listed for the top ranked player
+        table = self.driver.find_element_by_android_uiautomator("new UiSelector().className(android.widget.TableLayout)")
+        rows = table.find_elements_by_class_name('android.widget.TableRow')
+        for i in range(0, len(rows)):
+            cols = rows[i].find_elements_by_class_name('android.widget.TextView')
+            for j in range(0, len(cols)):
+                print(cols[j].get_attribute('text')+" -- "),
+            print("")
+ 
+ 
+#---START OF SCRIPT
+if __name__ == '__main__':
+    suite = unittest.TestLoader().loadTestsFromTestCase(Android_ATP_WTA)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+STEP 6: Start and launch Appium server
+Start Appium server console by double clicking on the Appium file. Click on the ‘rocket’ icon to launch the Appium node server.
+Please refer to the 6th and 7th step of our previous blog if you need more details on starting appium server.
+Start Appium
+
+STEP 7: Run the test
+You can run the test any way you like. We will run it using command prompt. The app gets launched in your device and navigates to different screen.
+
+ATP WTA Live PagePlayers PageATP Rankings List Page
+
+STEP 8: View the test result
+BrowserStack Test Result
