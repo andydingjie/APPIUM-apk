@@ -1,6 +1,8 @@
 
 http://qxf2.com/blog/appium-tutorial-python-physical-device/
 
+http://qxf2.com/blog/python-appium-scroll-through-search-result-table/
+
 Appium tutorial: Execute Python tests on mobile devices
 This Appium tutorial will show you how to run automated tests on a real physical device. We estimate skimming through this post will take you 10 minutes. We estimate working through this post, step by step, will take you about 90 minutes. In this post we will cover getting setup with Appium, interfacing with real devices, writing and running Appium tests. We also briefly introduce you to multiple ways to locate UI elements .
 
